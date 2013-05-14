@@ -67,7 +67,15 @@ template "#{node['nagios']['nrpe']['conf_dir']}/nrpe.cfg" do
   notifies :restart, "service[#{node['nagios']['nrpe']['service_name']}]"
 end
 
-service node['nagios']['nrpe']['service_name'] do
-  action [:start, :enable]
-  supports :restart => true, :reload => true, :status => true
+if platform?("debian") && node['platform_version'].to_f < 7
+  service node['nagios']['nrpe']['service_name'] do
+    action [:start, :enable]
+    supports :restart => true, :reload => true, :status => true
+    status_command "pkill -0 -f /usr/sbin/nrpe"
+  end
+else
+  service node['nagios']['nrpe']['service_name'] do
+    action [:start, :enable]
+    supports :restart => true, :reload => true, :status => true
+  end
 end
